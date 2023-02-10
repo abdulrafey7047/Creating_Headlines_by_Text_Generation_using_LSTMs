@@ -1,0 +1,8 @@
+Dataset:
+https://www.kaggle.com/datasets/aashita/nyt-comments?resource=download
+
+GloVe Embeddings:
+https://nlp.stanford.edu/data/glove.6B.zip
+
+Reading:
+https://nlp.stanford.edu/projects/glove/
