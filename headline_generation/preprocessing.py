@@ -1,0 +1,112 @@
+import re
+import numpy as np
+import pandas as pd
+
+from typing import List
+
+from tensorflow import one_hot
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+
+class DataPreProcessor:
+
+    def __init__(self, data: List) -> None:
+        self.data = pd.Series(data)
+        self.vocab = None
+        self.preprocessed_data = None
+
+    def clean(self):
+        """
+        @returns
+        self: DataPreProcessor, object with cleaned data in its 'data' attribute
+        """
+
+        ## Converting to Lowercase
+        self.data = self.data.apply(str.lower)
+
+        ## Removing Punctuations
+        self.data = self.data.apply(
+            lambda headline: re.sub(r'[^\w\s]', '', headline))
+
+        return self
+    
+    def preprocess(self, oov_token, max_padding_len, padding_type, tokenizing_filters=[]):
+        """
+        Fucntion to ...
+
+        @args
+        oov_token:
+        max_padding_len:
+        padding_type:
+        tokenizing_filters:
+
+        @returns
+        """
+
+        ## Generating n_grams
+        n_grams = np.array([])
+        for headline in self.data:
+            n_grams = np.append(n_grams, self._generate_n_grams(headline))
+
+        ## Generating Vocabulary
+        self.vocab = self.get_vocab()
+
+        ## Tokenizing
+        tokenizer = Tokenizer(oov_token=oov_token, filters=tokenizing_filters, lower=False)
+        tokenizer.fit_on_texts(self.vocab)
+        tokenized_n_grams = tokenizer.texts_to_sequences(n_grams)
+
+        ## Padding
+        self.preprocessed_data = pad_sequences(tokenized_n_grams, maxlen=max_padding_len, padding=padding_type)
+
+        return self
+    
+    def get_features_and_labels(self):
+        """
+        Function for ...
+        """
+
+        if self.preprocessed_data is None:
+            return "Features and Labels can only be extracted after preprocessing"
+
+        X = self.preprocessed_data[:, :-1]
+        y = self.preprocessed_data[:, -1]
+
+        y = one_hot(y, depth=len(self.vocab) + 2)
+
+        return X, y
+
+    def get_vocab(self):
+        """
+        Function to get the vocabulary of text stored in 'data' attribute
+
+        @returns
+        vocab: set, set of all words in self.data
+        """
+
+        vocab = set()
+        for headline in self.data:
+            n_grams = self._generate_n_grams(headline)
+            vocab = vocab.union(set(n_grams[-1].split()))
+        
+        return vocab
+
+    def _generate_n_grams(self, sentence: str):
+        """
+        Private method to generate n-gram sequences for given 'sentence'.
+
+        @args
+        sentence: str, sentences whose n-grams are to be generated.
+
+        @returns
+        n_grams: list, sequence of generated n-grams.
+        """
+
+        n_grams = list()
+        sentence_words = sentence.split()
+        for i in range(2, len(sentence_words) + 1):
+            n_grams.append(' '.join(sentence_words[0: i]))
+
+        return n_grams
+
