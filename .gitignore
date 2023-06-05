@@ -10,6 +10,7 @@ __pycache__/
 dataset/
 glove.6B/
 *.h5
+main.ipynb
 
 # Distribution / packaging
 .Python
