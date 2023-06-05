@@ -1,9 +1,11 @@
+import os
 import re
 import numpy as np
 import pandas as pd
 
 from typing import List
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow import one_hot
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -14,9 +16,10 @@ class DataPreProcessor:
     def __init__(self, data: List) -> None:
         self.data = pd.Series(data)
         self.vocab = None
+        self.tokenizer = None
         self.preprocessed_data = None
 
-    def clean(self):
+    def clean_data(self):
         """
         @returns
         self: DataPreProcessor, object with cleaned data in its 'data' attribute
@@ -44,6 +47,10 @@ class DataPreProcessor:
         @returns
         """
 
+        ## Adding <START> and <END> tokens
+        self.data = self.data.apply(
+            lambda headline: f'<START> {headline} <END>')
+
         ## Generating n_grams
         n_grams = np.array([])
         for headline in self.data:
@@ -53,9 +60,9 @@ class DataPreProcessor:
         self.vocab = self.get_vocab()
 
         ## Tokenizing
-        tokenizer = Tokenizer(oov_token=oov_token, filters=tokenizing_filters, lower=False)
-        tokenizer.fit_on_texts(self.vocab)
-        tokenized_n_grams = tokenizer.texts_to_sequences(n_grams)
+        self.tokenizer = Tokenizer(oov_token=oov_token, filters=tokenizing_filters, lower=False)
+        self.tokenizer.fit_on_texts(self.vocab)
+        tokenized_n_grams = self.tokenizer.texts_to_sequences(n_grams)
 
         ## Padding
         self.preprocessed_data = pad_sequences(tokenized_n_grams, maxlen=max_padding_len, padding=padding_type)
@@ -88,7 +95,10 @@ class DataPreProcessor:
         vocab = set()
         for headline in self.data:
             n_grams = self._generate_n_grams(headline)
-            vocab = vocab.union(set(n_grams[-1].split()))
+            try:
+                vocab = vocab.union(set(n_grams[-1].split()))
+            except IndexError:
+                pass
         
         return vocab
 

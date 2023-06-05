@@ -6,6 +6,11 @@ __pycache__/
 # C extensions
 *.so
 
+# Custom
+dataset/
+glove.6B/
+*.h5
+
 # Distribution / packaging
 .Python
 build/
