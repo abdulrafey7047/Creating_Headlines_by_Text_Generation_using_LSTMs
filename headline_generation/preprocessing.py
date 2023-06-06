@@ -36,7 +36,7 @@ class DataPreProcessor:
     
     def preprocess(self, oov_token, max_padding_len, padding_type, tokenizing_filters=[]):
         """
-        Fucntion to preprocess data and bring it into a format that can be fed to the
+        Method to preprocess data and bring it into a format that can be fed to the
         HeadlineGenerator class
 
         @args
@@ -73,7 +73,7 @@ class DataPreProcessor:
     
     def get_features_and_labels(self) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Function for separating features and their labels from self.preprocessed_data
+        Method for separating features and their labels from self.preprocessed_data
 
         @returns
         X:  numpy.ndarray, features extracted from data
@@ -92,7 +92,7 @@ class DataPreProcessor:
 
     def get_vocab(self) -> Set[str]:
         """
-        Function to get the vocabulary of text stored in 'data' attribute
+        Method to get the vocabulary of text stored in 'data' attribute
 
         @returns
         vocab: set, set of all words in self.data
