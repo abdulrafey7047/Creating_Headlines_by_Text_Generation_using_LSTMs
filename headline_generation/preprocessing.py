@@ -3,7 +3,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from typing import List
+from typing import List, Tuple, Set
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow import one_hot
@@ -13,7 +13,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 class DataPreProcessor:
 
-    def __init__(self, data: List) -> None:
+    def __init__(self, data: List):
         self.data = pd.Series(data)
         self.vocab = None
         self.tokenizer = None
@@ -36,15 +36,17 @@ class DataPreProcessor:
     
     def preprocess(self, oov_token, max_padding_len, padding_type, tokenizing_filters=[]):
         """
-        Fucntion to ...
+        Method to preprocess data and bring it into a format that can be fed to the
+        HeadlineGenerator class
 
         @args
-        oov_token:
-        max_padding_len:
-        padding_type:
-        tokenizing_filters:
+        oov_token:          str, out of vocabulary token, passed to tensorflow's tokenizer
+        max_padding_len:    int, length to which all sequences will be padded to
+        padding_type:       str, where to add padding tokens, either one from 'pre' or 'post'
+        tokenizing_filters: list, filters passed to tensorflow's tokenizer
 
         @returns
+        self: DataPreProcessor, object with preprocessed data in its 'preprocessed' attribute
         """
 
         ## Adding <START> and <END> tokens
@@ -69,9 +71,13 @@ class DataPreProcessor:
 
         return self
     
-    def get_features_and_labels(self):
+    def get_features_and_labels(self) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Function for ...
+        Method for separating features and their labels from self.preprocessed_data
+
+        @returns
+        X:  numpy.ndarray, features extracted from data
+        y:  numpy.ndarray, labels extracted from data
         """
 
         if self.preprocessed_data is None:
@@ -84,9 +90,9 @@ class DataPreProcessor:
 
         return X, y
 
-    def get_vocab(self):
+    def get_vocab(self) -> Set[str]:
         """
-        Function to get the vocabulary of text stored in 'data' attribute
+        Method to get the vocabulary of text stored in 'data' attribute
 
         @returns
         vocab: set, set of all words in self.data
@@ -102,7 +108,7 @@ class DataPreProcessor:
         
         return vocab
 
-    def _generate_n_grams(self, sentence: str):
+    def _generate_n_grams(self, sentence: str) -> List[str]:
         """
         Private method to generate n-gram sequences for given 'sentence'.
 
